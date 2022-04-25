@@ -100,7 +100,7 @@ void Image::filterRed()
 }
 void Image::filterGreen()
 {
-    for(int i = 0; i <= w*h ;i++)
+    for(int i = 0; i <= w*h-1 ;i++)
     {
         pixels[i].b = 0;
         pixels[i].r = 0;
@@ -108,7 +108,7 @@ void Image::filterGreen()
 }
 void Image::filterBlue()
 {
-    for(int i = 0; i <= w*h ;i++)
+    for(int i = 0; i <= w*h-1 ;i++)
     {
         pixels[i].g = 0;
         pixels[i].r = 0;
@@ -116,7 +116,7 @@ void Image::filterBlue()
 }
 void Image::greyScale()
 {
-    for(int i = 0; i <= w*h ;i++)
+    for(int i = 0; i <= w*h-1 ;i++)
     {
         // Code given by andrew
         float grayScale = (pixels[i].r + pixels[i].g + pixels[i].b) /3;
@@ -167,92 +167,109 @@ void Image::flipVertically()
             tmpImage->pixels[total+x] = pixels[(y+x)];
         }
     }
-
     pixels = tmpImage->pixels;
 }
 void Image::AdditionalFunction2()
 {
+    float depth = 20;
+    float intensity = 2;
+    for(int i = 0; i <= w*h-1 ;i++)
+    {
+        float average = (pixels[i].r + pixels[i].g + pixels[i].b) / 3;
+        pixels[i].r = average + (depth*2);
+        pixels[i].g = average + depth;
+        pixels[i].b = average - intensity;
+        if(pixels[i].r > 255)
+        {
+            pixels[i].r = 255;
+        }
+        if(pixels[i].g > 255)
+        {
+            pixels[i].g = 255;
+        }
+        if(pixels[i].g > 255)
+        {
+            pixels[i].b = 255;
+        }
+        if(pixels[i].b > 255)
+        {
+            pixels[i].b = 255;
+        }
+        if(pixels[i].b < 0)
+        {
+            pixels[i].b = 0;
+        }
 
+    }
 }
 void Image::AdditionalFunction3()
 {
-
+    float depth = 20;
+    float intensity = 2;
+    for(int i = 0; i <= w*h-1 ;i++)
+    {
+        float average = (pixels[i].r + pixels[i].g + pixels[i].b) / 3;
+        pixels[i].r = average + (depth*2);
+        pixels[i].g = average + depth;
+        pixels[i].b = average - intensity;
+        if(pixels[i].r > 255)
+        {
+            pixels[i].r = 255;
+        }
+        if(pixels[i].g > 255)
+        {
+            pixels[i].g = 255;
+        }
+        if(pixels[i].g > 255)
+        {
+            pixels[i].b = 255;
+        }
+        if(pixels[i].b > 255)
+        {
+            pixels[i].b = 255;
+        }
+        if(pixels[i].b < 0)
+        {
+            pixels[i].b = 0;
+        }
 }
 void Image::AdditionalFunction1()
 {
-    Image *zImage = new Image(w*2,h*2);//Make a temp image 2 times the size as the displayed one
-
+    float rTotal = 0, gTotal=0, bTotal=0;
+    for(int y = 0 ; y < h; y++)
     {
-        //zooming the image**************************************
-
-        int nextPixel = 0;
-        int nextRow = 0; //pixel at the start of the next row
-        Image *zzz = new Image(w,h);
-        zzz->pixels = pixels;
-
-        int g=0;
-        for (int y = 0; y < h; y++)// loop through all the pixels of main
+        for(int x = 0 ; x < w; x++)
         {
-            g++;
-            for (int x = 0; x < w; x++)
+            //128, 97, 60
+            rTotal = 0; gTotal = 0; bTotal= 0;
+            if(x==0||y==0||x==w-1||y==h-1)
+                continue;
+            else
             {
-                if (y == 0)//set the first row manually
+                Rgb neighbours[] =
+                        {pixels[(y-1)*w+(x-1)],
+                         pixels[(y-1)*w+x],
+                         pixels[(y-1)*w+x+1],
+                        pixels[(y)*w+x-1],
+                        pixels[(y)*w+x],
+                        pixels[(y)*w+x+1],
+                        pixels[(y+1)*w+(x-1)],
+                        pixels[(y+1)*w+x],
+                        pixels[(y+1)*w+x+1]};
+
+                for(Rgb p: neighbours)
                 {
-                    cout<<to_string(pixels[x,y].r)<<endl;
-                    zImage->pixels[nextPixel,y] = pixels[x,y];
-                    zImage->pixels[nextPixel + 1,y] = pixels[x,y];
-                    zImage->pixels[nextPixel,y+1] = pixels[x,y];
-                    zImage->pixels[nextPixel + 1,y+1] = pixels[x,y];
-
-                    //zBmp.SetPixel(nextPixel, h, mainBmp.GetPixel(w, h));//assign each pixel in the copy to the original image
-                    //zBmp.SetPixel(nextPixel + 1, h, mainBmp.GetPixel(w, h));//assign the next pixel to the same
-                    //zBmp.SetPixel(nextPixel, h + 1, mainBmp.GetPixel(w, h));//do the same for row 1 as row 0
-                    //zBmp.SetPixel(nextPixel + 1, h + 1, mainBmp.GetPixel(w, h));
+                    rTotal += p.r;
+                    gTotal += p.g;
+                    bTotal += p.b;
                 }
-
-                zImage->pixels[nextPixel,nextRow] = pixels[x,y];
-                zImage->pixels[nextPixel+1,nextRow] = pixels[x,y];
-                zImage->pixels[nextPixel,nextRow+1] = pixels[x,y];
-                zImage->pixels[nextPixel+1,nextRow+1] = pixels[x,y];
-
-//                zBmp.SetPixel(nextPixel, nextRow, mainBmp.GetPixel(w, h));//assign each pixel in the copy to the original image
-//                zBmp.SetPixel(nextPixel + 1, nextRow, mainBmp.GetPixel(w, h));//assign the next pixel to the same
-//                zBmp.SetPixel(nextPixel, nextRow + 1, mainBmp.GetPixel(w, h));//do the same as above for current row + 1
-//                zBmp.SetPixel(nextPixel + 1, nextRow + 1, mainBmp.GetPixel(w, h));
-
-                if (nextPixel < (w - 2))
-                {
-                    nextPixel += 2;// jump 2 pixels each time
-                }
+                pixels[y*w+x].r=rTotal/9;
+                pixels[y*w+x].g=gTotal/9;
+                pixels[y*w+x].b=bTotal/9;
 
             }
-
-            nextPixel = 0; //reset to start of next row
-
-            if (nextRow < h)// we dont want the last row as we'd get an "out of range" error
-            {
-                nextRow += 2;// jump 2 rows each time
-            }
-
         }
-        //now place the portion of the zoomed image into the picture
-        cout<<to_string(h)+" "+to_string(w)<<endl;
-        for (int cnt = 0; cnt < h*w-1; cnt++)
-        {
-            pixels[cnt].r = zImage->pixels[cnt].r;
-            pixels[cnt].g = zImage->pixels[cnt].g;
-            pixels[cnt].b = zImage->pixels[cnt].b;
-
-        }
-        //pixels=zzz->pixels;
-
     }
-
-
-
-
-
-
 }
 
 /* Functions used by the GUI - DO NOT MODIFY */
