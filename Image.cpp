@@ -127,24 +127,31 @@ void Image::greyScale()
 }
 void Image::flipHorizontal()
 {
+    //Makes a temp image that all our calculations are rin on
     Image *tmpImage = new Image();
     *tmpImage->pixels = *pixels;
 
-    int y;
-    int x;
+    int y;//Variable to move along the height
+    int x;//Variable to move along the width
 
+    //Loops over all the pixels in our temp image
     for (int total = 0; total<=(h*w) ; total+=w)
     {
+        //Loop along the width(row)
         for (int x = 0; x < w ; x++)
         {
+            //Temp image pixels are = pixels of the whole image, -x to get the last pixel on the row
             tmpImage->pixels[y+x]  = pixels[(total+w) - (x+1)];
         }
+        //y now takes on the value of total
         y = total;
     }
 
+    //The pixels displayed are now take on the values of tmpImage pixels which shows
+    //the image flipped on the horizontal
     pixels = tmpImage->pixels;
-
 }
+//Follow the same approach as horizontal, only we are flipping on the x-axis, rather than the height
 void Image::flipVertically()
 {
     Image *tmpImage = new Image();
@@ -160,8 +167,6 @@ void Image::flipVertically()
             y = y - w;
         }
 
-//        cout<<"y val = "<<y<<endl;
-//        cout<<"total val = "<<total<<endl;
         for (int x = 0; x < w ; x++)
         {
             tmpImage->pixels[total+x] = pixels[(y+x)];
@@ -171,35 +176,42 @@ void Image::flipVertically()
 }
 void Image::AdditionalFunction2()
 {
-    float depth = 20;
-    float intensity = 2;
-    for(int i = 0; i <= w*h-1 ;i++)
-    {
-        float average = (pixels[i].r + pixels[i].g + pixels[i].b) / 3;
-        pixels[i].r = average + (depth*2);
-        pixels[i].g = average + depth;
-        pixels[i].b = average - intensity;
-        if(pixels[i].r > 255)
-        {
-            pixels[i].r = 255;
-        }
-        if(pixels[i].g > 255)
-        {
-            pixels[i].g = 255;
-        }
-        if(pixels[i].g > 255)
-        {
-            pixels[i].b = 255;
-        }
-        if(pixels[i].b > 255)
-        {
-            pixels[i].b = 255;
-        }
-        if(pixels[i].b < 0)
-        {
-            pixels[i].b = 0;
-        }
+    Image zImage(w*2 , h*2 );//Make a temp image 2 times the size as the displayed one
 
+    // ZOOM the image, could also be image RESIZE
+    // the idea is to create a larger image, grab a portion of it and display in the
+    // main image "zoom". we do this by getting each pixel in the main image and
+    // making that 4 square on the larger one.
+
+    int nextRow = 0, startPos = 0, step = 0, row = 0;// Zoom variables
+
+    for (int i = 0; i < (w * h); ++i)
+    {
+        if (i%w==0)// check to see if we are at the end of a row
+        {
+            row = i*2;//next row on zoomed image
+            nextRow = row+zImage.w;
+        }
+        zImage.pixels[i+step+row] = pixels[i];//This double all pixels on the x axis
+        zImage.pixels[i+step+row+1] = pixels[i];
+
+        zImage.pixels[i+step+nextRow] = pixels[i];//This double all pixels on the x axis on the next row
+        zImage.pixels[i+step+nextRow+1] = pixels[i];//nextRow is the row below the current
+
+        step+=1;//current pixel plus the one beside it
+    }
+    row=0;//reset row
+    startPos = ((zImage.w*zImage.h)/4)-(w/2);//-(h*w);//start in the middle
+
+    //zImage->savePPM("test.ppm");// testing
+
+    for (int i = 0; i < (w * h); ++i)
+    {
+        if (i%w==0)// check to see if we are at the end of a row
+        {
+            row += w;//next row on zoomed image
+        }
+        pixels[i]=zImage.pixels[i+row+startPos];
     }
 }
 void Image::AdditionalFunction3()
@@ -232,42 +244,59 @@ void Image::AdditionalFunction3()
         {
             pixels[i].b = 0;
         }
+    }
+
 }
+
 void Image::AdditionalFunction1()
 {
+    //Code heavily based on delboy8080 starter github code
+    Image blurImage;
+    blurImage.pixels = pixels;
+
+    //Variables for new r g b values
     float rTotal = 0, gTotal=0, bTotal=0;
+    //Loop to interate along the height
     for(int y = 0 ; y < h; y++)
     {
+        //Loop to interate along the width
         for(int x = 0 ; x < w; x++)
         {
-            //128, 97, 60
+            //All variables are set to zero
             rTotal = 0; gTotal = 0; bTotal= 0;
+            //If at top left, or at the end of a row or column continue
             if(x==0||y==0||x==w-1||y==h-1)
                 continue;
             else
             {
+                //Here we get each pixel, and swap it with the one next to it in the array
                 Rgb neighbours[] =
                         {pixels[(y-1)*w+(x-1)],
                          pixels[(y-1)*w+x],
                          pixels[(y-1)*w+x+1],
-                        pixels[(y)*w+x-1],
-                        pixels[(y)*w+x],
-                        pixels[(y)*w+x+1],
-                        pixels[(y+1)*w+(x-1)],
-                        pixels[(y+1)*w+x],
-                        pixels[(y+1)*w+x+1]};
+                         pixels[(y)*w+x-1],
+                         pixels[(y)*w+x],
+                         pixels[(y)*w+x+1],
+                         pixels[(y+1)*w+(x-1)],
+                         pixels[(y+1)*w+x],
+                         pixels[(y+1)*w+x+1]};
 
                 for(Rgb p: neighbours)
                 {
+                    //Here the pixels get assigned there new value after being switched in the array
                     rTotal += p.r;
                     gTotal += p.g;
                     bTotal += p.b;
                 }
-                pixels[y*w+x].r=rTotal/9;
-                pixels[y*w+x].g=gTotal/9;
-                pixels[y*w+x].b=bTotal/9;
 
+                //Not really sure why you must divide by 9
+                blurImage.pixels[y*w+x].r=rTotal/9;
+                blurImage.pixels[y*w+x].g=gTotal/9;
+                blurImage.pixels[y*w+x].b=bTotal/9;
             }
+
+            //Display the image being blurred once all calculations are done to the temp image
+            pixels = blurImage.pixels;
         }
     }
 }
